@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cart — Via Porto</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Hanken+Grotesk:wght@300;400;500&family=IBM+Plex+Mono:wght@300;400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/shared.css">
+<style>
+  .cart-wrap {
+    padding: clamp(24px,4vh,40px) clamp(24px,6vw,108px) clamp(80px,12vh,140px);
+    max-width: 980px;
+  }
+  .cart-wrap h1 {
+    font-family: 'Cormorant Garamond', serif; font-weight: 300;
+    font-size: clamp(40px,6vw,76px); color: var(--ink); margin: 0 0 clamp(40px,6vh,64px);
+  }
+
+  .cart-row {
+    display: grid;
+    grid-template-columns: 90px 1fr auto auto auto;
+    gap: 20px;
+    align-items: center;
+    padding: 26px 0;
+    border-bottom: 1px solid rgba(64,69,76,0.14);
+  }
+  @media (max-width: 700px) {
+    .cart-row { grid-template-columns: 60px 1fr; grid-template-areas: "thumb info" "thumb qty" "thumb price"; row-gap: 10px; }
+  }
+  .cart-thumb {
+    width: 90px; height: 110px;
+    background: repeating-linear-gradient(135deg,#ece8e0,#ece8e0 9px,#e5e0d6 9px,#e5e0d6 18px);
+  }
+  @media (max-width: 700px) { .cart-thumb { width: 60px; height: 76px; grid-area: thumb; } }
+
+  .cart-info .name { font-family: 'Cormorant Garamond', serif; font-size: 22px; color: var(--ink); }
+  .cart-info .meta { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-top: 6px; }
+
+  .qty-control { display: flex; align-items: center; gap: 10px; font-family: 'IBM Plex Mono', monospace; font-size: 13px; }
+  .qty-control button {
+    width: 26px; height: 26px; border: 1px solid rgba(64,69,76,0.3); background: none;
+    cursor: pointer; font-family: inherit; font-size: 14px; line-height: 1;
+  }
+  .qty-control button:hover { border-color: var(--ink); }
+
+  .cart-price { font-family: 'IBM Plex Mono', monospace; font-size: 14px; color: var(--body-text); white-space: nowrap; }
+
+  .remove-btn {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--muted); background: none; border: none;
+    cursor: pointer; transition: color 0.2s;
+  }
+  .remove-btn:hover { color: #a33; }
+
+  .cart-empty { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 22px; color: var(--muted); padding: 40px 0; }
+
+  .cart-summary {
+    margin-top: 44px; padding-top: 28px; border-top: 1px solid rgba(64,69,76,0.2);
+    max-width: 360px; margin-left: auto;
+  }
+  .summary-row { display: flex; justify-content: space-between; font-size: 13px; color: var(--body-text); padding: 8px 0; }
+  .summary-row.total { font-family: 'IBM Plex Mono', monospace; font-size: 18px; color: var(--ink); border-top: 1px solid rgba(64,69,76,0.14); margin-top: 8px; padding-top: 16px; }
+
+  .checkout-error {
+    margin-top: 16px; font-size: 12px; color: #a33; text-align: center; display: none;
+  }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <a href="index.html" class="logo">Via&nbsp;Porto</a>
+  <div class="links">
+    <a href="index.html#collection">Collection</a>
+    <a href="index.html#ports">Ports</a>
+    <a href="index.html#atelier">Atelier</a>
+    <a href="cart.html" class="cart-link">Cart <span class="cart-badge" data-cart-count></span></a>
+  </div>
+</nav>
+
+<section class="cart-wrap">
+  <h1 class="serif">Your Cart</h1>
+  <div id="cartItems"></div>
+  <div class="cart-summary" id="cartSummary" style="display:none;">
+    <div class="summary-row"><span>Subtotal</span><span class="mono" id="subtotal"></span></div>
+    <div class="summary-row"><span>Shipping</span><span class="mono">Calculated at checkout</span></div>
+    <div class="summary-row total"><span>Total</span><span id="total"></span></div>
+    <button class="btn-solid" id="checkoutBtn" style="margin-top:24px;">Proceed to Checkout</button>
+    <div class="checkout-error" id="checkoutError">Something went wrong reaching checkout. Please try again.</div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="top">
+    <h2 class="serif">Via Porto</h2>
+    <p class="tagline serif">A private Mediterranean design house.</p>
+  </div>
+  <div class="cols">
+    <div><div class="label">Atelier</div><div class="val">Roma &middot; Italia<br>41&deg;54&prime;N 12&deg;29&prime;E</div></div>
+    <div><div class="label">Enquiries</div><div class="val">studio@viaporto.com<br>Request the Catalogue</div></div>
+    <div><div class="label">Index</div><div class="val"><a href="index.html#collection">Collection</a><br><a href="index.html#ports">Ports</a><br><a href="index.html#atelier">Materiality</a></div></div>
+  </div>
+  <div class="bottom">
+    <span>&copy; MMXXVI Via Porto</span>
+    <span>Designed with restraint</span>
+  </div>
+</footer>
+
+<script src="assets/cart.js"></script>
+<script>
+  function formatEUR(n) { return '\u20ac ' + n.toFixed(2); }
+
+  function render() {
+    var cart = ViaPortoCart.getCart();
+    var container = document.getElementById('cartItems');
+    var summary = document.getElementById('cartSummary');
+
+    if (cart.length === 0) {
+      container.innerHTML = '<div class="cart-empty">Your cart is empty. <a href="index.html#collection" style="text-decoration:underline;">Browse the collection &rarr;</a></div>';
+      summary.style.display = 'none';
+      return;
+    }
+
+    container.innerHTML = '';
+    cart.forEach(function (item) {
+      var row = document.createElement('div');
+      row.className = 'cart-row';
+      row.innerHTML =
+        '<div class="cart-thumb"></div>' +
+        '<div class="cart-info">' +
+          '<div class="name">' + item.name + '</div>' +
+          '<div class="meta">' + item.material + ' &middot; Size ' + item.size + '</div>' +
+        '</div>' +
+        '<div class="qty-control">' +
+          '<button class="qty-minus" aria-label="Decrease quantity">&minus;</button>' +
+          '<span>' + item.qty + '</span>' +
+          '<button class="qty-plus" aria-label="Increase quantity">+</button>' +
+        '</div>' +
+        '<div class="cart-price">' + formatEUR(item.price * item.qty) + '</div>' +
+        '<button class="remove-btn">Remove</button>';
+
+      row.querySelector('.qty-minus').addEventListener('click', function () {
+        ViaPortoCart.updateQty(item.id, item.size, item.qty - 1);
+        render();
+      });
+      row.querySelector('.qty-plus').addEventListener('click', function () {
+        ViaPortoCart.updateQty(item.id, item.size, item.qty + 1);
+        render();
+      });
+      row.querySelector('.remove-btn').addEventListener('click', function () {
+        ViaPortoCart.removeFromCart(item.id, item.size);
+        render();
+      });
+
+      container.appendChild(row);
+    });
+
+    var total = ViaPortoCart.cartTotal();
+    document.getElementById('subtotal').textContent = formatEUR(total);
+    document.getElementById('total').textContent = formatEUR(total);
+    summary.style.display = 'block';
+  }
+
+  document.getElementById('checkoutBtn').addEventListener('click', function () {
+    var btn = this;
+    var errorEl = document.getElementById('checkoutError');
+    errorEl.style.display = 'none';
+    btn.disabled = true;
+    btn.textContent = 'Redirecting…';
+
+    fetch('/.netlify/functions/create-checkout-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ items: ViaPortoCart.getCart() })
+    })
+      .then(function (res) {
+        if (!res.ok) throw new Error('Checkout session failed');
+        return res.json();
+      })
+      .then(function (data) {
+        if (data.url) {
+          window.location.href = data.url;
+        } else {
+          throw new Error('No checkout URL returned');
+        }
+      })
+      .catch(function (err) {
+        console.error(err);
+        errorEl.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Proceed to Checkout';
+      });
+  });
+
+  render();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Order Confirmed — Via Porto</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Hanken+Grotesk:wght@300;400;500&family=IBM+Plex+Mono:wght@300;400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/shared.css">
+<style>
+  .success-wrap {
+    min-height: 70vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 40px 24px;
+  }
+  .success-wrap .eyebrow { font-size: 11px; letter-spacing: 0.36em; text-transform: uppercase; color: var(--muted); margin-bottom: 24px; }
+  .success-wrap h1 { font-family: 'Cormorant Garamond', serif; font-weight: 300; font-size: clamp(36px,6vw,64px); color: var(--ink); margin: 0 0 20px; }
+  .success-wrap p { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 19px; color: var(--body-text); max-width: 460px; margin: 0 0 36px; }
+  .order-ref { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--muted); margin-bottom: 40px; word-break: break-all; }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <a href="index.html" class="logo">Via&nbsp;Porto</a>
+  <div class="links">
+    <a href="index.html#collection">Collection</a>
+    <a href="index.html#ports">Ports</a>
+    <a href="index.html#atelier">Atelier</a>
+    <a href="cart.html" class="cart-link">Cart <span class="cart-badge" data-cart-count></span></a>
+  </div>
+</nav>
+
+<section class="success-wrap">
+  <div class="eyebrow">Order Confirmed</div>
+  <h1 class="serif">Thank you.</h1>
+  <p class="serif">Your order has been received. A confirmation will follow by email, along with tracking once it leaves the atelier.</p>
+  <div class="order-ref mono" id="orderRef"></div>
+  <a href="index.html" class="btn-line">Return to Via Porto</a>
+</section>
+
+<footer class="site-footer">
+  <div class="top">
+    <h2 class="serif">Via Porto</h2>
+    <p class="tagline serif">A private Mediterranean design house.</p>
+  </div>
+  <div class="bottom">
+    <span>&copy; MMXXVI Via Porto</span>
+    <span>Designed with restraint</span>
+  </div>
+</footer>
+
+<script src="assets/cart.js"></script>
+<script>
+  // Clear the cart now that payment succeeded
+  ViaPortoCart.clearCart();
+
+  var params = new URLSearchParams(window.location.search);
+  var sessionId = params.get('session_id');
+  if (sessionId) {
+    document.getElementById('orderRef').textContent = 'Ref: ' + sessionId;
+  }
+</script>
+
+</body>
+</html>

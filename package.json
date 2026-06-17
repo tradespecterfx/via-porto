@@ -1,0 +1,9 @@
+{
+  "name": "via-porto",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Via Porto — Mediterranean atelier storefront with Stripe Checkout",
+  "dependencies": {
+    "stripe": "^16.0.0"
+  }
+}
