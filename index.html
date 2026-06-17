@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Via Porto — A Private Mediterranean Design House</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -21,6 +21,32 @@
   a:focus-visible, [tabindex]:focus-visible { outline:1px solid #F6F4EF; outline-offset:3px; }
   .product-link div:first-child { transition: transform 0.5s cubic-bezier(.2,.7,.2,1); }
   .product-link:hover div:first-child { transform: scale(1.03); }
+
+  @media (max-width: 720px) {
+    .vp-nav { padding: 18px 20px !important; }
+    .vp-nav-links { gap: 14px !important; }
+    .vp-nav-link { display: none; }
+
+    .vp-collection-head { align-items: flex-start !important; flex-direction: column; gap: 18px !important; }
+    .vp-collection-coord { text-align: left !important; }
+
+    .vp-collection-img { height: clamp(320px, 48vh, 480px) !important; }
+
+    .vp-port-row {
+      grid-template-columns: 32px 1fr !important;
+      row-gap: 4px;
+    }
+    .vp-port-coord {
+      grid-column: 1 / -1;
+      text-align: left !important;
+      font-size: 11px !important;
+      margin-top: 2px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .vp-nav { padding: 16px 18px !important; }
+  }
 </style>
 </head>
 <body>
@@ -30,12 +56,12 @@
   <canvas id="chart" style="position:absolute;inset:0;width:100%;height:100%;display:block;"></canvas>
   <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(16,26,39,0.55) 0%,rgba(16,26,39,0.12) 26%,rgba(16,26,39,0.18) 62%,rgba(16,26,39,0.82) 100%);pointer-events:none;"></div>
 
-  <nav style="position:absolute;top:0;left:0;right:0;z-index:3;display:flex;align-items:center;justify-content:space-between;padding:clamp(22px,3.4vw,40px) clamp(24px,6vw,108px);">
+  <nav class="vp-nav" style="position:absolute;top:0;left:0;right:0;z-index:3;display:flex;align-items:center;justify-content:space-between;padding:clamp(22px,3.4vw,40px) clamp(24px,6vw,108px);">
     <div style="font-family:'Hanken Grotesk',sans-serif;font-size:13px;letter-spacing:0.42em;text-transform:uppercase;color:#F6F4EF;font-weight:400;">Via&nbsp;Porto</div>
-    <div style="display:flex;gap:clamp(20px,2.6vw,42px);align-items:center;">
-      <a href="#collection" style="font-size:11px;letter-spacing:0.28em;text-transform:uppercase;color:#B9BDC2;">Collection</a>
-      <a href="#ports" style="font-size:11px;letter-spacing:0.28em;text-transform:uppercase;color:#B9BDC2;">Ports</a>
-      <a href="#atelier" style="font-size:11px;letter-spacing:0.28em;text-transform:uppercase;color:#B9BDC2;">Atelier</a>
+    <div class="vp-nav-links" style="display:flex;gap:clamp(20px,2.6vw,42px);align-items:center;">
+      <a href="#collection" class="vp-nav-link" style="font-size:11px;letter-spacing:0.28em;text-transform:uppercase;color:#B9BDC2;">Collection</a>
+      <a href="#ports" class="vp-nav-link" style="font-size:11px;letter-spacing:0.28em;text-transform:uppercase;color:#B9BDC2;">Ports</a>
+      <a href="#atelier" class="vp-nav-link" style="font-size:11px;letter-spacing:0.28em;text-transform:uppercase;color:#B9BDC2;">Atelier</a>
       <a href="cart.html" style="font-size:11px;letter-spacing:0.28em;text-transform:uppercase;color:#F6F4EF;display:inline-flex;align-items:center;gap:6px;">Cart
         <span data-cart-count style="display:none;align-items:center;justify-content:center;min-width:16px;height:16px;padding:0 4px;border-radius:50%;background:#F6F4EF;color:#101A27;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:1;"></span>
       </a>
@@ -52,7 +78,7 @@
     </a>
   </div>
 
-  <div style="position:absolute;bottom:clamp(22px,3.4vh,40px);left:0;right:0;z-index:2;display:flex;align-items:flex-end;justify-content:space-between;padding:0 clamp(24px,6vw,108px);">
+  <div style="position:absolute;bottom:calc(clamp(22px,3.4vh,40px) + env(safe-area-inset-bottom));left:0;right:0;z-index:2;display:flex;align-items:flex-end;justify-content:space-between;padding:0 clamp(24px,6vw,108px);">
     <div style="font-family:'IBM Plex Mono',monospace;font-weight:300;font-size:12px;letter-spacing:0.14em;color:#B9BDC2;">41&deg;N &nbsp;/&nbsp; 12&deg;E &nbsp;&mdash;&nbsp; MARE NOSTRUM</div>
     <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
       <span style="font-size:10px;letter-spacing:0.3em;text-transform:uppercase;color:#B9BDC2;">Scroll</span>
@@ -72,19 +98,19 @@
 <!-- ============ FEATURED COLLECTION ============ -->
 <section id="collection" style="padding:clamp(40px,7vh,96px) clamp(24px,6vw,108px) clamp(80px,12vh,150px);background:#F6F4EF;">
 
-  <div data-reveal style="opacity:0;transform:translateY(28px);transition:opacity 1.2s cubic-bezier(.2,.7,.2,1),transform 1.2s cubic-bezier(.2,.7,.2,1);display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:24px;margin-bottom:clamp(36px,6vh,64px);">
+  <div data-reveal class="vp-collection-head" style="opacity:0;transform:translateY(28px);transition:opacity 1.2s cubic-bezier(.2,.7,.2,1),transform 1.2s cubic-bezier(.2,.7,.2,1);display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:24px;margin-bottom:clamp(36px,6vh,64px);">
     <div>
       <div style="font-size:11px;letter-spacing:0.36em;text-transform:uppercase;color:#B9BDC2;margin-bottom:18px;">Port Series 01</div>
       <h2 style="font-family:'Cormorant Garamond',serif;font-weight:300;font-size:clamp(46px,8vw,120px);line-height:0.94;letter-spacing:0.01em;margin:0;color:#101A27;">Portofino</h2>
     </div>
-    <div style="text-align:right;">
+    <div class="vp-collection-coord" style="text-align:right;">
       <div style="font-size:11px;letter-spacing:0.3em;text-transform:uppercase;color:#B9BDC2;margin-bottom:10px;">Liguria &middot; Italy</div>
       <div id="coordHover" style="font-family:'IBM Plex Mono',monospace;font-weight:300;font-size:clamp(13px,1.5vw,17px);letter-spacing:0.12em;color:#40454C;cursor:crosshair;display:inline-block;border-bottom:1px solid rgba(64,69,76,0.22);padding-bottom:5px;">44&deg;18&prime;13&Prime;N&nbsp;&nbsp;9&deg;12&prime;35&Prime;E</div>
-      <div style="font-size:10px;letter-spacing:0.24em;text-transform:uppercase;color:#C6C0B5;margin-top:9px;">Hover to chart</div>
+      <div id="coordHint" style="font-size:10px;letter-spacing:0.24em;text-transform:uppercase;color:#C6C0B5;margin-top:9px;">Hover to chart</div>
     </div>
   </div>
 
-  <div data-reveal style="opacity:0;transform:translateY(28px);transition:opacity 1.4s cubic-bezier(.2,.7,.2,1),transform 1.4s cubic-bezier(.2,.7,.2,1);position:relative;height:clamp(420px,72vh,820px);overflow:hidden;background:#e7e3da;">
+  <div data-reveal class="vp-collection-img" style="opacity:0;transform:translateY(28px);transition:opacity 1.4s cubic-bezier(.2,.7,.2,1),transform 1.4s cubic-bezier(.2,.7,.2,1);position:relative;height:clamp(420px,72vh,820px);overflow:hidden;background:#e7e3da;">
     <div data-parallax="0.05" style="position:absolute;left:0;right:0;top:-8%;height:116%;background:repeating-linear-gradient(132deg,#e9e5dc,#e9e5dc 13px,#e3dfd5 13px,#e3dfd5 26px);"></div>
     <div style="position:absolute;left:clamp(18px,2.4vw,34px);bottom:clamp(16px,2.4vw,30px);font-family:'IBM Plex Mono',monospace;font-weight:300;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:rgba(64,69,76,0.6);z-index:2;">Portofino &middot; Golden Hour &mdash; Drone 16:9 [ image placeholder ]</div>
     <div id="coordChart" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;transition:opacity 900ms cubic-bezier(.2,.7,.2,1);opacity:0;z-index:2;">
@@ -156,25 +182,25 @@
 <section id="ports" style="padding:clamp(80px,14vh,170px) clamp(24px,6vw,108px);background:#101A27;color:#F6F4EF;">
   <div data-reveal style="opacity:0;transform:translateY(24px);transition:opacity 1.1s cubic-bezier(.2,.7,.2,1),transform 1.1s cubic-bezier(.2,.7,.2,1);font-size:11px;letter-spacing:0.36em;text-transform:uppercase;color:#B9BDC2;margin-bottom:clamp(40px,7vh,72px);">Forthcoming Ports</div>
 
-  <div data-reveal style="opacity:0;transform:translateY(24px);transition:opacity 1.1s cubic-bezier(.2,.7,.2,1),transform 1.1s cubic-bezier(.2,.7,.2,1);border-top:1px solid rgba(185,189,194,0.18);display:grid;grid-template-columns:72px 1fr auto;align-items:center;gap:18px;padding:clamp(22px,3.4vh,34px) 0;">
+  <div data-reveal class="vp-port-row" style="opacity:0;transform:translateY(24px);transition:opacity 1.1s cubic-bezier(.2,.7,.2,1),transform 1.1s cubic-bezier(.2,.7,.2,1);border-top:1px solid rgba(185,189,194,0.18);display:grid;grid-template-columns:72px 1fr auto;align-items:center;gap:18px;padding:clamp(22px,3.4vh,34px) 0;">
     <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#B9BDC2;">02</span>
     <span style="font-family:'Cormorant Garamond',serif;font-weight:300;font-size:clamp(28px,4vw,52px);line-height:1;color:#F6F4EF;">Monaco</span>
-    <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.1em;color:#C6C0B5;text-align:right;">43&deg;44&prime;25&Prime;N&nbsp;7&deg;25&prime;24&Prime;E</span>
+    <span class="vp-port-coord" style="font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.1em;color:#C6C0B5;text-align:right;">43&deg;44&prime;25&Prime;N&nbsp;7&deg;25&prime;24&Prime;E</span>
   </div>
-  <div data-reveal data-reveal-delay="70" style="opacity:0;transform:translateY(24px);transition:opacity 1.1s cubic-bezier(.2,.7,.2,1),transform 1.1s cubic-bezier(.2,.7,.2,1);border-top:1px solid rgba(185,189,194,0.18);display:grid;grid-template-columns:72px 1fr auto;align-items:center;gap:18px;padding:clamp(22px,3.4vh,34px) 0;">
+  <div data-reveal data-reveal-delay="70" class="vp-port-row" style="opacity:0;transform:translateY(24px);transition:opacity 1.1s cubic-bezier(.2,.7,.2,1),transform 1.1s cubic-bezier(.2,.7,.2,1);border-top:1px solid rgba(185,189,194,0.18);display:grid;grid-template-columns:72px 1fr auto;align-items:center;gap:18px;padding:clamp(22px,3.4vh,34px) 0;">
     <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#B9BDC2;">03</span>
     <span style="font-family:'Cormorant Garamond',serif;font-weight:300;font-size:clamp(28px,4vw,52px);line-height:1;color:#F6F4EF;">Mykonos</span>
-    <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.1em;color:#C6C0B5;text-align:right;">37&deg;26&prime;42&Prime;N&nbsp;25&deg;19&prime;42&Prime;E</span>
+    <span class="vp-port-coord" style="font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.1em;color:#C6C0B5;text-align:right;">37&deg;26&prime;42&Prime;N&nbsp;25&deg;19&prime;42&Prime;E</span>
   </div>
-  <div data-reveal data-reveal-delay="140" style="opacity:0;transform:translateY(24px);transition:opacity 1.1s cubic-bezier(.2,.7,.2,1),transform 1.1s cubic-bezier(.2,.7,.2,1);border-top:1px solid rgba(185,189,194,0.18);display:grid;grid-template-columns:72px 1fr auto;align-items:center;gap:18px;padding:clamp(22px,3.4vh,34px) 0;">
+  <div data-reveal data-reveal-delay="140" class="vp-port-row" style="opacity:0;transform:translateY(24px);transition:opacity 1.1s cubic-bezier(.2,.7,.2,1),transform 1.1s cubic-bezier(.2,.7,.2,1);border-top:1px solid rgba(185,189,194,0.18);display:grid;grid-template-columns:72px 1fr auto;align-items:center;gap:18px;padding:clamp(22px,3.4vh,34px) 0;">
     <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#B9BDC2;">04</span>
     <span style="font-family:'Cormorant Garamond',serif;font-weight:300;font-size:clamp(28px,4vw,52px);line-height:1;color:#F6F4EF;">Dubrovnik</span>
-    <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.1em;color:#C6C0B5;text-align:right;">42&deg;38&prime;25&Prime;N&nbsp;18&deg;06&prime;30&Prime;E</span>
+    <span class="vp-port-coord" style="font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.1em;color:#C6C0B5;text-align:right;">42&deg;38&prime;25&Prime;N&nbsp;18&deg;06&prime;30&Prime;E</span>
   </div>
-  <div data-reveal data-reveal-delay="210" style="opacity:0;transform:translateY(24px);transition:opacity 1.1s cubic-bezier(.2,.7,.2,1),transform 1.1s cubic-bezier(.2,.7,.2,1);border-top:1px solid rgba(185,189,194,0.18);border-bottom:1px solid rgba(185,189,194,0.18);display:grid;grid-template-columns:72px 1fr auto;align-items:center;gap:18px;padding:clamp(22px,3.4vh,34px) 0;">
+  <div data-reveal data-reveal-delay="210" class="vp-port-row" style="opacity:0;transform:translateY(24px);transition:opacity 1.1s cubic-bezier(.2,.7,.2,1),transform 1.1s cubic-bezier(.2,.7,.2,1);border-top:1px solid rgba(185,189,194,0.18);border-bottom:1px solid rgba(185,189,194,0.18);display:grid;grid-template-columns:72px 1fr auto;align-items:center;gap:18px;padding:clamp(22px,3.4vh,34px) 0;">
     <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#B9BDC2;">05</span>
     <span style="font-family:'Cormorant Garamond',serif;font-weight:300;font-size:clamp(28px,4vw,52px);line-height:1;color:#F6F4EF;">Ibiza</span>
-    <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.1em;color:#C6C0B5;text-align:right;">38&deg;54&prime;25&Prime;N&nbsp;1&deg;25&prime;57&Prime;E</span>
+    <span class="vp-port-coord" style="font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.1em;color:#C6C0B5;text-align:right;">38&deg;54&prime;25&Prime;N&nbsp;1&deg;25&prime;57&Prime;E</span>
   </div>
 </section>
 
@@ -236,9 +262,17 @@
   // Coordinate hover chart on Portofino image
   var coordHover = document.getElementById('coordHover');
   var coordChart = document.getElementById('coordChart');
+  var coordHint = document.getElementById('coordHint');
+  var isTouch = window.matchMedia && window.matchMedia('(hover: none)').matches;
+  if (coordHint && isTouch) { coordHint.textContent = 'Tap to chart'; }
   if (coordHover && coordChart) {
     coordHover.addEventListener('mouseenter', function(){ coordChart.style.opacity = '1'; });
     coordHover.addEventListener('mouseleave', function(){ coordChart.style.opacity = '0'; });
+    coordHover.addEventListener('click', function(e){
+      e.preventDefault();
+      var isVisible = coordChart.style.opacity === '1';
+      coordChart.style.opacity = isVisible ? '0' : '1';
+    });
   }
 
   // Scroll reveal

@@ -59,6 +59,12 @@ a:focus-visible, [tabindex]:focus-visible, button:focus-visible, select:focus-vi
 }
 .site-nav .links a:hover { color: var(--ink); }
 
+@media (max-width: 720px) {
+  .site-nav { padding: 18px 20px; }
+  .site-nav .links { gap: 14px; }
+  .site-nav .links a:not(.cart-link) { display: none; }
+}
+
 .cart-link {
   position: relative;
   display: inline-flex;

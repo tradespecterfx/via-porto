@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Cart — Via Porto</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -65,6 +65,10 @@
 
   .checkout-error {
     margin-top: 16px; font-size: 12px; color: #a33; text-align: center; display: none;
+  }
+
+  @media (max-width: 480px) {
+    .cart-summary { max-width: 100%; }
   }
 </style>
 </head>
