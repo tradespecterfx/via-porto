@@ -1,20 +1,17 @@
 // netlify/functions/create-checkout-session.js
 //
 // This function runs server-side on Netlify. It reads the cart sent from
-// the browser, rebuilds the line items using a trusted price list (never
-// trusting prices sent from the client), and creates a Stripe Checkout
-// Session. The Stripe secret key lives only in Netlify's environment
-// variables — it is never exposed to the browser.
+// the browser, rebuilds the line items using the trusted product list
+// stored in Netlify Blobs (never trusting prices sent from the client),
+// and creates a Stripe Checkout Session. The Stripe secret key lives only
+// in Netlify's environment variables — it is never exposed to the browser.
+//
+// NOTE: Stripe is not available for businesses registered in Ukraine.
+// This function is kept for when a supported payment processor (Stripe,
+// or a Ukrainian provider like WayForPay) is connected.
 
 const Stripe = require('stripe');
-
-// Server-side source of truth for prices (in cents) — never trust the
-// price the browser sends, only the id/size.
-const CATALOG = {
-  'marina-shirt': { name: 'The Marina Shirt', priceCents: 32000 },
-  'dock-trouser': { name: 'The Dock Trouser', priceCents: 38000 },
-  'teak-knit': { name: 'The Teak Knit', priceCents: 41000 }
-};
+const { getStore } = require('@netlify/blobs');
 
 exports.handler = async function (event) {
   if (event.httpMethod !== 'POST') {
@@ -43,9 +40,14 @@ exports.handler = async function (event) {
     return { statusCode: 400, body: JSON.stringify({ error: 'Cart is empty' }) };
   }
 
+  const store = getStore('via-porto-data');
+  const products = (await store.get('products', { type: 'json' })) || [];
+  const catalogById = {};
+  products.forEach((p) => { catalogById[p.id] = p; });
+
   const line_items = [];
   for (const item of items) {
-    const catalogEntry = CATALOG[item.id];
+    const catalogEntry = catalogById[item.id];
     if (!catalogEntry) {
       return { statusCode: 400, body: JSON.stringify({ error: 'Unknown product: ' + item.id }) };
     }
@@ -56,7 +58,7 @@ exports.handler = async function (event) {
         product_data: {
           name: catalogEntry.name + ' — Size ' + item.size,
         },
-        unit_amount: catalogEntry.priceCents
+        unit_amount: Math.round(catalogEntry.price * 100)
       },
       quantity: qty
     });

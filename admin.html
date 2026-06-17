@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Admin — Via Porto</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Hanken+Grotesk:wght@300;400;500&family=IBM+Plex+Mono:wght@300;400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/shared.css">
+<style>
+  .admin-wrap { padding: clamp(24px,4vh,40px) clamp(24px,6vw,108px) clamp(80px,12vh,140px); max-width: 980px; }
+  .admin-wrap h1 { font-family: 'Cormorant Garamond', serif; font-weight: 300; font-size: clamp(34px,5vw,56px); color: var(--ink); margin: 0 0 8px; }
+  .admin-sub { font-size: 12px; color: var(--muted); letter-spacing: 0.06em; margin-bottom: 40px; }
+
+  /* Login gate */
+  .login-box { max-width: 380px; margin: 80px auto; text-align: center; }
+  .login-box .serif { font-size: 26px; color: var(--ink); margin-bottom: 24px; }
+  .login-box input {
+    width: 100%; padding: 14px 16px; font-family: 'IBM Plex Mono', monospace; font-size: 14px;
+    border: 1px solid rgba(64,69,76,0.3); background: none; color: var(--body-text); margin-bottom: 16px;
+  }
+  .login-error { color: #a33; font-size: 12px; margin-bottom: 12px; min-height: 16px; }
+
+  /* Product list */
+  .product-row {
+    display: grid; grid-template-columns: 1fr auto auto auto; gap: 16px; align-items: center;
+    padding: 18px 0; border-bottom: 1px solid rgba(64,69,76,0.12);
+  }
+  .product-row .pname { font-family: 'Cormorant Garamond', serif; font-size: 19px; color: var(--ink); }
+  .product-row .pmeta { font-size: 11px; color: var(--muted); letter-spacing: 0.06em; margin-top: 4px; }
+  .product-row .pprice { font-family: 'IBM Plex Mono', monospace; font-size: 14px; }
+  .row-btn {
+    font-family: 'Hanken Grotesk', sans-serif; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+    background: none; border: 1px solid rgba(64,69,76,0.3); padding: 8px 16px; cursor: pointer; transition: all .2s;
+    color: var(--body-text);
+  }
+  .row-btn:hover { border-color: var(--ink); color: var(--ink); }
+  .row-btn.danger:hover { border-color: #a33; color: #a33; }
+
+  .add-btn-wrap { margin: 32px 0 48px; }
+
+  /* Form modal-ish panel */
+  .form-panel {
+    border: 1px solid rgba(64,69,76,0.18); padding: clamp(24px,4vw,40px); margin-bottom: 40px; display: none;
+  }
+  .form-panel.open { display: block; }
+  .form-panel h2 { font-family: 'Cormorant Garamond', serif; font-weight: 300; font-size: 26px; margin: 0 0 24px; color: var(--ink); }
+  .form-row { margin-bottom: 18px; }
+  .form-row label { display: block; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+  .form-row input, .form-row textarea {
+    width: 100%; padding: 12px 14px; font-family: 'Hanken Grotesk', sans-serif; font-size: 14px;
+    border: 1px solid rgba(64,69,76,0.3); background: none; color: var(--body-text);
+  }
+  .form-row textarea { resize: vertical; min-height: 70px; font-family: 'Cormorant Garamond', serif; font-size: 16px; }
+  .form-row .hint { font-size: 11px; color: var(--muted); margin-top: 6px; }
+  .form-actions { display: flex; gap: 12px; margin-top: 8px; flex-wrap: wrap; }
+  .form-actions .btn-solid { width: auto; padding: 14px 28px; }
+  .form-actions .cancel-btn {
+    background: none; border: 1px solid rgba(64,69,76,0.3); color: var(--body-text);
+    font-family: 'Hanken Grotesk', sans-serif; font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase;
+    padding: 14px 28px; cursor: pointer;
+  }
+  .form-msg { font-size: 12px; margin-top: 14px; min-height: 16px; }
+  .form-msg.error { color: #a33; }
+  .form-msg.success { color: #2a7a4a; }
+
+  @media (max-width: 700px) {
+    .product-row { grid-template-columns: 1fr; row-gap: 10px; }
+    .product-row .actions { display: flex; gap: 8px; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <a href="index.html" class="logo">Via&nbsp;Porto</a>
+  <div class="links">
+    <a href="index.html#collection">Collection</a>
+    <a href="cart.html" class="cart-link">Cart <span class="cart-badge" data-cart-count></span></a>
+  </div>
+</nav>
+
+<!-- ===== LOGIN GATE ===== -->
+<div class="login-box" id="loginBox">
+  <div class="serif">Admin Access</div>
+  <input type="password" id="passwordInput" placeholder="Password" autocomplete="off">
+  <div class="login-error" id="loginError"></div>
+  <button class="btn-solid" id="loginBtn">Enter</button>
+</div>
+
+<!-- ===== ADMIN PANEL ===== -->
+<section class="admin-wrap" id="adminPanel" style="display:none;">
+  <h1 class="serif">Manage Products</h1>
+  <div class="admin-sub mono">Changes go live on the site immediately after saving.</div>
+
+  <div class="add-btn-wrap">
+    <button class="row-btn" id="showAddFormBtn">+ Add New Product</button>
+  </div>
+
+  <div class="form-panel" id="formPanel">
+    <h2 id="formTitle">New Product</h2>
+    <form id="productForm">
+      <input type="hidden" id="editId" value="">
+      <div class="form-row">
+        <label for="fName">Name</label>
+        <input type="text" id="fName" placeholder="The Coastal Jacket" required>
+      </div>
+      <div class="form-row">
+        <label for="fPrice">Price (EUR)</label>
+        <input type="number" id="fPrice" placeholder="450" required>
+      </div>
+      <div class="form-row">
+        <label for="fMaterial">Material &amp; Colour</label>
+        <input type="text" id="fMaterial" placeholder="Wool Blend · Charcoal">
+      </div>
+      <div class="form-row">
+        <label for="fDescription">Description</label>
+        <textarea id="fDescription" placeholder="A short, evocative description of the piece."></textarea>
+      </div>
+      <div class="form-row">
+        <label for="fSizes">Available Sizes (comma-separated)</label>
+        <input type="text" id="fSizes" placeholder="XS, S, M, L, XL">
+        <div class="hint">e.g. XS, S, M, L, XL — or 44, 46, 48, 50, 52 for trousers</div>
+      </div>
+      <div class="form-row">
+        <label for="fUnavailable">Sold-Out Sizes (comma-separated, optional)</label>
+        <input type="text" id="fUnavailable" placeholder="XS">
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn-solid" id="saveBtn">Save Product</button>
+        <button type="button" class="cancel-btn" id="cancelFormBtn">Cancel</button>
+      </div>
+      <div class="form-msg" id="formMsg"></div>
+    </form>
+  </div>
+
+  <div id="productList"></div>
+</section>
+
+<script src="assets/cart.js"></script>
+<script>
+(function () {
+  var API = '/.netlify/functions/products-api';
+  var adminPassword = sessionStorage.getItem('vp_admin_pw') || '';
+
+  var loginBox = document.getElementById('loginBox');
+  var adminPanel = document.getElementById('adminPanel');
+  var passwordInput = document.getElementById('passwordInput');
+  var loginError = document.getElementById('loginError');
+
+  function apiFetch(method, query, body) {
+    return fetch(API + (query || ''), {
+      method: method,
+      headers: {
+        'Content-Type': 'application/json',
+        'x-admin-password': adminPassword
+      },
+      body: body ? JSON.stringify(body) : undefined
+    });
+  }
+
+  function showAdmin() {
+    loginBox.style.display = 'none';
+    adminPanel.style.display = 'block';
+    loadProducts();
+  }
+
+  function tryLogin(pw) {
+    adminPassword = pw;
+    apiFetch('POST', '?check=1').then(function (res) {
+      if (res.status === 401) {
+        loginError.textContent = 'Incorrect password.';
+        adminPassword = '';
+        sessionStorage.removeItem('vp_admin_pw');
+      } else {
+        sessionStorage.setItem('vp_admin_pw', pw);
+        showAdmin();
+      }
+    }).catch(function () {
+      loginError.textContent = 'Could not reach the server. Try again.';
+    });
+  }
+
+  document.getElementById('loginBtn').addEventListener('click', function () {
+    loginError.textContent = '';
+    var pw = passwordInput.value.trim();
+    if (!pw) { loginError.textContent = 'Enter a password.'; return; }
+    tryLogin(pw);
+  });
+  passwordInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') document.getElementById('loginBtn').click();
+  });
+
+  if (adminPassword) {
+    // We had a stored password from a previous session — verify it's still valid.
+    apiFetch('POST', '?check=1').then(function (res) {
+      if (res.status === 401) {
+        sessionStorage.removeItem('vp_admin_pw');
+        adminPassword = '';
+      } else {
+        showAdmin();
+      }
+    });
+  }
+
+  // ----- Product list rendering -----
+  function loadProducts() {
+    fetch(API).then(function (r) { return r.json(); }).then(function (data) {
+      renderList(data.products || []);
+    });
+  }
+
+  function renderList(products) {
+    var container = document.getElementById('productList');
+    container.innerHTML = '';
+    if (products.length === 0) {
+      container.innerHTML = '<p style="color:var(--muted);font-size:13px;">No products yet.</p>';
+      return;
+    }
+    products.forEach(function (p) {
+      var row = document.createElement('div');
+      row.className = 'product-row';
+      row.innerHTML =
+        '<div>' +
+          '<div class="pname">' + p.name + '</div>' +
+          '<div class="pmeta">' + (p.material || '') + ' &middot; ' + (p.sizes || []).join(', ') + '</div>' +
+        '</div>' +
+        '<div class="pprice mono">&euro; ' + p.price + '</div>' +
+        '<div class="actions" style="display:flex;gap:8px;">' +
+          '<button class="row-btn edit-btn">Edit</button>' +
+          '<button class="row-btn danger delete-btn">Delete</button>' +
+        '</div>';
+
+      row.querySelector('.edit-btn').addEventListener('click', function () { openForm(p); });
+      row.querySelector('.delete-btn').addEventListener('click', function () { deleteProduct(p); });
+      container.appendChild(row);
+    });
+  }
+
+  function deleteProduct(p) {
+    if (!confirm('Delete "' + p.name + '"? This cannot be undone.')) return;
+    apiFetch('DELETE', '?id=' + encodeURIComponent(p.id)).then(function (res) {
+      if (res.ok) loadProducts();
+      else alert('Failed to delete.');
+    });
+  }
+
+  // ----- Add / edit form -----
+  var formPanel = document.getElementById('formPanel');
+  var formTitle = document.getElementById('formTitle');
+  var formMsg = document.getElementById('formMsg');
+  var editIdField = document.getElementById('editId');
+
+  function openForm(product) {
+    formMsg.textContent = '';
+    formMsg.className = 'form-msg';
+    if (product) {
+      formTitle.textContent = 'Edit Product';
+      editIdField.value = product.id;
+      document.getElementById('fName').value = product.name || '';
+      document.getElementById('fPrice').value = product.price || '';
+      document.getElementById('fMaterial').value = product.material || '';
+      document.getElementById('fDescription').value = product.description || '';
+      document.getElementById('fSizes').value = (product.sizes || []).join(', ');
+      document.getElementById('fUnavailable').value = (product.unavailableSizes || []).join(', ');
+    } else {
+      formTitle.textContent = 'New Product';
+      editIdField.value = '';
+      document.getElementById('productForm').reset();
+    }
+    formPanel.classList.add('open');
+    formPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function closeForm() {
+    formPanel.classList.remove('open');
+  }
+
+  document.getElementById('showAddFormBtn').addEventListener('click', function () { openForm(null); });
+  document.getElementById('cancelFormBtn').addEventListener('click', closeForm);
+
+  document.getElementById('productForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var id = editIdField.value;
+    var sizes = document.getElementById('fSizes').value.split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+    var unavailable = document.getElementById('fUnavailable').value.split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+
+    var payload = {
+      name: document.getElementById('fName').value.trim(),
+      price: Number(document.getElementById('fPrice').value),
+      material: document.getElementById('fMaterial').value.trim(),
+      description: document.getElementById('fDescription').value.trim(),
+      sizes: sizes,
+      unavailableSizes: unavailable
+    };
+
+    formMsg.textContent = 'Saving…';
+    formMsg.className = 'form-msg';
+
+    var req = id
+      ? apiFetch('PUT', '?id=' + encodeURIComponent(id), payload)
+      : apiFetch('POST', '', payload);
+
+    req.then(function (res) {
+      if (!res.ok) {
+        return res.json().then(function (data) {
+          throw new Error(data.error || 'Save failed');
+        });
+      }
+      return res.json();
+    }).then(function () {
+      formMsg.textContent = 'Saved.';
+      formMsg.className = 'form-msg success';
+      loadProducts();
+      setTimeout(closeForm, 700);
+    }).catch(function (err) {
+      formMsg.textContent = err.message;
+      formMsg.className = 'form-msg error';
+    });
+  });
+})();
+</script>
+
+</body>
+</html>
