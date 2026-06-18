@@ -24,8 +24,15 @@
 
   /* Product list */
   .product-row {
-    display: grid; grid-template-columns: 1fr auto auto auto; gap: 16px; align-items: center;
+    display: grid; grid-template-columns: 48px 1fr auto auto auto; gap: 16px; align-items: center;
     padding: 18px 0; border-bottom: 1px solid rgba(64,69,76,0.12);
+  }
+  .product-row .pthumb {
+    width: 48px; height: 48px; object-fit: cover; background: rgba(64,69,76,0.08);
+    display: block; flex-shrink: 0;
+  }
+  .product-row .pthumb-empty {
+    width: 48px; height: 48px; background: rgba(64,69,76,0.08); flex-shrink: 0;
   }
   .product-row .pname { font-family: 'Cormorant Garamond', serif; font-size: 19px; color: var(--ink); }
   .product-row .pmeta { font-size: 11px; color: var(--muted); letter-spacing: 0.06em; margin-top: 4px; }
@@ -40,7 +47,7 @@
 
   .add-btn-wrap { margin: 32px 0 48px; }
 
-  /* Form modal-ish panel */
+  /* Form panel */
   .form-panel {
     border: 1px solid rgba(64,69,76,0.18); padding: clamp(24px,4vw,40px); margin-bottom: 40px; display: none;
   }
@@ -50,10 +57,11 @@
   .form-row label { display: block; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
   .form-row input, .form-row textarea {
     width: 100%; padding: 12px 14px; font-family: 'Hanken Grotesk', sans-serif; font-size: 14px;
-    border: 1px solid rgba(64,69,76,0.3); background: none; color: var(--body-text);
+    border: 1px solid rgba(64,69,76,0.3); background: none; color: var(--body-text); box-sizing: border-box;
   }
   .form-row textarea { resize: vertical; min-height: 70px; font-family: 'Cormorant Garamond', serif; font-size: 16px; }
   .form-row .hint { font-size: 11px; color: var(--muted); margin-top: 6px; }
+  .img-preview { margin-top: 10px; max-width: 120px; max-height: 120px; object-fit: cover; display: none; border: 1px solid rgba(64,69,76,0.15); }
   .form-actions { display: flex; gap: 12px; margin-top: 8px; flex-wrap: wrap; }
   .form-actions .btn-solid { width: auto; padding: 14px 28px; }
   .form-actions .cancel-btn {
@@ -66,8 +74,9 @@
   .form-msg.success { color: #2a7a4a; }
 
   @media (max-width: 700px) {
-    .product-row { grid-template-columns: 1fr; row-gap: 10px; }
-    .product-row .actions { display: flex; gap: 8px; }
+    .product-row { grid-template-columns: 40px 1fr; row-gap: 10px; }
+    .product-row .actions { display: flex; gap: 8px; grid-column: 1 / -1; }
+    .product-row .pprice { display: none; }
   }
 </style>
 </head>
@@ -126,6 +135,12 @@
       <div class="form-row">
         <label for="fUnavailable">Sold-Out Sizes (comma-separated, optional)</label>
         <input type="text" id="fUnavailable" placeholder="XS">
+      </div>
+      <div class="form-row">
+        <label for="fImage">Product Image URL</label>
+        <input type="url" id="fImage" placeholder="https://... или /assets/images/photo.jpg">
+        <div class="hint">Загрузи фото в папку assets/images/ на GitHub, вставь сюда путь вида /assets/images/имя-файла.jpg</div>
+        <img id="imgPreview" class="img-preview" alt="Preview">
       </div>
       <div class="form-actions">
         <button type="submit" class="btn-solid" id="saveBtn">Save Product</button>
@@ -193,7 +208,6 @@
   });
 
   if (adminPassword) {
-    // We had a stored password from a previous session — verify it's still valid.
     apiFetch('POST', '?check=1').then(function (res) {
       if (res.status === 401) {
         sessionStorage.removeItem('vp_admin_pw');
@@ -204,24 +218,45 @@
     });
   }
 
-  // ----- Product list rendering -----
+  // Image URL preview
+  var fImage = document.getElementById('fImage');
+  var imgPreview = document.getElementById('imgPreview');
+  fImage.addEventListener('input', function () {
+    var url = fImage.value.trim();
+    if (url) {
+      imgPreview.src = url;
+      imgPreview.style.display = 'block';
+    } else {
+      imgPreview.style.display = 'none';
+    }
+  });
+
+  // ----- Product list -----
   function loadProducts() {
     fetch(API).then(function (r) { return r.json(); }).then(function (data) {
-      renderList(data.products || []);
+      // API returns array directly
+      var products = Array.isArray(data) ? data : (data.products || []);
+      renderList(products);
     });
   }
 
   function renderList(products) {
     var container = document.getElementById('productList');
     container.innerHTML = '';
-    if (products.length === 0) {
+    if (!products || products.length === 0) {
       container.innerHTML = '<p style="color:var(--muted);font-size:13px;">No products yet.</p>';
       return;
     }
     products.forEach(function (p) {
       var row = document.createElement('div');
       row.className = 'product-row';
+
+      var thumbHtml = p.image
+        ? '<img class="pthumb" src="' + p.image + '" alt="">'
+        : '<div class="pthumb-empty"></div>';
+
       row.innerHTML =
+        thumbHtml +
         '<div>' +
           '<div class="pname">' + p.name + '</div>' +
           '<div class="pmeta">' + (p.material || '') + ' &middot; ' + (p.sizes || []).join(', ') + '</div>' +
@@ -246,7 +281,7 @@
     });
   }
 
-  // ----- Add / edit form -----
+  // ----- Form -----
   var formPanel = document.getElementById('formPanel');
   var formTitle = document.getElementById('formTitle');
   var formMsg = document.getElementById('formMsg');
@@ -264,10 +299,15 @@
       document.getElementById('fDescription').value = product.description || '';
       document.getElementById('fSizes').value = (product.sizes || []).join(', ');
       document.getElementById('fUnavailable').value = (product.unavailableSizes || []).join(', ');
+      var img = product.image || '';
+      fImage.value = img;
+      if (img) { imgPreview.src = img; imgPreview.style.display = 'block'; }
+      else { imgPreview.style.display = 'none'; }
     } else {
       formTitle.textContent = 'New Product';
       editIdField.value = '';
       document.getElementById('productForm').reset();
+      imgPreview.style.display = 'none';
     }
     formPanel.classList.add('open');
     formPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -283,16 +323,14 @@
   document.getElementById('productForm').addEventListener('submit', function (e) {
     e.preventDefault();
     var id = editIdField.value;
-    var sizes = document.getElementById('fSizes').value.split(',').map(function (s) { return s.trim(); }).filter(Boolean);
-    var unavailable = document.getElementById('fUnavailable').value.split(',').map(function (s) { return s.trim(); }).filter(Boolean);
-
     var payload = {
       name: document.getElementById('fName').value.trim(),
       price: Number(document.getElementById('fPrice').value),
       material: document.getElementById('fMaterial').value.trim(),
       description: document.getElementById('fDescription').value.trim(),
-      sizes: sizes,
-      unavailableSizes: unavailable
+      sizes: document.getElementById('fSizes').value,
+      soldOutSizes: document.getElementById('fUnavailable').value,
+      image: fImage.value.trim()
     };
 
     formMsg.textContent = 'Saving…';
